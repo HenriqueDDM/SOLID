@@ -16,7 +16,19 @@ export async function authenticate(
 
   try {
     const authenticateUseCase = makeAuthenticate();
-    await authenticateUseCase.execute({ email, password });
+    const { user } = await authenticateUseCase.execute({ email, password });
+
+    const token = await reply.jwtSign(
+      {},
+      {
+        sign: {
+          sub: user.id,
+        },
+      }
+    );
+
+    return reply.status(200).send({ token });
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     if (err instanceof InvalidCredentialsError) {
@@ -24,6 +36,4 @@ export async function authenticate(
     }
     throw err;
   }
-
-  return reply.status(200).send();
 }
